@@ -28,6 +28,9 @@ export const config = {
   maxTokens: toInt(process.env.MAX_TOKENS, 2048),
   maxHistoryChars: toInt(process.env.MAX_HISTORY_CHARS, 8000),
   rateLimitPerMinute: toInt(process.env.RATE_LIMIT_PER_MINUTE, 20),
+  // Recherche web (outil browser_search de Groq) pour vérifier les faits et citer des sources.
+  // Disponible seulement avec les modèles gpt-oss. Mettre "false" pour la couper.
+  webSearch: (process.env.MATHIS_WEB_SEARCH ?? 'true').toLowerCase() !== 'false',
 
   // Limites de validation des messages entrants
   limits: {
@@ -37,6 +40,11 @@ export const config = {
     maxTotalChars: 400000,
   },
 };
+
+/** La recherche web est-elle utilisable avec le modèle configuré ? */
+export function isWebSearchEnabled() {
+  return config.webSearch && config.model.startsWith('openai/gpt-oss');
+}
 
 export function isApiKeyConfigured() {
   return Boolean(config.apiKey) && !config.apiKey.includes('xxxx');

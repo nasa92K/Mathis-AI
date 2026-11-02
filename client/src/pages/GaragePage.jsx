@@ -1,4 +1,5 @@
-import { ArrowRight, Wrench } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowRight, ShieldCheck, Wrench } from 'lucide-react';
 import './shared.css';
 import './GaragePage.css';
 
@@ -91,6 +92,71 @@ export default function GaragePage({ onAsk, isGenerating }) {
           Lancer un diagnostic <ArrowRight size={16} />
         </button>
       </section>
+
+      <FactCheck onAsk={onAsk} isGenerating={isGenerating} />
     </div>
+  );
+}
+
+const CLAIM_EXAMPLES = [
+  'La Bugatti Chiron dépasse les 400 km/h.',
+  'Le Rafale peut voler à Mach 2.',
+  "Le mode Zéro construction existe toujours dans Fortnite.",
+];
+
+/** « Vrai ou faux ? » : Mathis vérifie une info en ligne et cite ses sources. */
+function FactCheck({ onAsk, isGenerating }) {
+  const [claim, setClaim] = useState('');
+  const submit = (text) => {
+    const value = text.trim();
+    if (!value || isGenerating) return;
+    onAsk(`Vrai ou faux ? Vérifie cette info avec des sources fiables : « ${value} »`);
+    setClaim('');
+  };
+
+  return (
+    <section className="diagnostic factcheck" aria-labelledby="factcheck-title">
+      <ShieldCheck size={28} className="diagnostic__icon" aria-hidden="true" />
+      <div className="diagnostic__body">
+        <h2 id="factcheck-title" className="diagnostic__title">
+          Vrai ou faux&nbsp;?
+        </h2>
+        <p>
+          Une rumeur, une stat, un chiffre qui te paraît louche ? Mathis cherche sur le web, recoupe les sources et te
+          donne un verdict clair, avec les liens.
+        </p>
+        <form
+          className="factcheck__form"
+          onSubmit={(event) => {
+            event.preventDefault();
+            submit(claim);
+          }}
+        >
+          <label htmlFor="factcheck-input" className="sr-only">
+            Info à vérifier
+          </label>
+          <input
+            id="factcheck-input"
+            className="factcheck__input"
+            value={claim}
+            maxLength={500}
+            placeholder="Colle une info à vérifier…"
+            onChange={(event) => setClaim(event.target.value)}
+          />
+          <button type="submit" className="pill pill--solid" disabled={!claim.trim() || isGenerating}>
+            Vérifier <ArrowRight size={16} />
+          </button>
+        </form>
+        <ul className="factcheck__examples" aria-label="Exemples">
+          {CLAIM_EXAMPLES.map((example) => (
+            <li key={example}>
+              <button type="button" disabled={isGenerating} onClick={() => submit(example)}>
+                {example}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
   );
 }

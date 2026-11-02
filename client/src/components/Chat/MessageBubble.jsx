@@ -1,8 +1,9 @@
 import { memo, useState } from 'react';
-import { AlertCircle, Check, Copy, RefreshCw, RotateCcw, Square } from 'lucide-react';
+import { AlertCircle, Check, Copy, RefreshCw, RotateCcw, Square, WifiOff } from 'lucide-react';
 import MathisAvatar from '../Brand/MathisAvatar.jsx';
 import MarkdownContent from './MarkdownContent.jsx';
 import TypingIndicator from './TypingIndicator.jsx';
+import { SearchIndicator, SourceList, withSourcesText } from './WebSources.jsx';
 import { useSmoothText } from '../../hooks/useSmoothText.js';
 import { copyToClipboard } from '../../utils/helpers.js';
 
@@ -43,6 +44,8 @@ function AssistantMessage({ message, isLast, canRegenerate, onRegenerate, smooth
   const streaming = message.status === 'streaming';
   const shownText = useSmoothText(message.content, streaming, smoothTyping);
   const stillTyping = streaming || shownText.length < message.content.length;
+  const searching = streaming && message.searching;
+  const sources = message.sources ?? [];
 
   return (
     <article className="message message--assistant" aria-label="Réponse de Mathis AI" aria-busy={streaming}>
@@ -53,13 +56,23 @@ function AssistantMessage({ message, isLast, canRegenerate, onRegenerate, smooth
         </div>
 
         {streaming && !shownText ? (
-          <TypingIndicator />
+          searching ? <SearchIndicator query={message.searching.query} /> : <TypingIndicator />
         ) : (
           shownText && (
             <div className={stillTyping ? 'is-typing' : undefined}>
               <MarkdownContent content={shownText} />
             </div>
           )
+        )}
+
+        {searching && shownText && <SearchIndicator query={message.searching.query} />}
+
+        {sources.length > 0 && !stillTyping && <SourceList sources={sources} />}
+
+        {message.searchUnavailable && !streaming && (
+          <p className="message__note">
+            <WifiOff size={12} aria-hidden="true" /> Recherche web indisponible : réponse non vérifiée en ligne
+          </p>
         )}
 
         {message.status === 'stopped' && (
@@ -85,7 +98,7 @@ function AssistantMessage({ message, isLast, canRegenerate, onRegenerate, smooth
 
         {!streaming && message.status !== 'error' && message.content && (
           <div className="message__actions">
-            <CopyButton text={message.content} />
+            <CopyButton text={withSourcesText(message.content, sources)} />
             {isLast && canRegenerate && (
               <button
                 type="button"

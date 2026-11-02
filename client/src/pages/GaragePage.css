@@ -116,3 +116,70 @@
     align-items: flex-start;
   }
 }
+
+/* Vrai ou faux ? */
+.factcheck {
+  align-items: flex-start;
+  margin-top: calc(-1 * clamp(36px, 5vw, 64px));
+  border-color: rgba(214, 60, 245, 0.5);
+  background:
+    radial-gradient(500px 200px at 100% 0%, var(--accent-soft), transparent 70%),
+    var(--bg-2);
+}
+.factcheck__form {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+.factcheck__input {
+  flex: 1;
+  min-width: 0;
+  padding: 11px 20px;
+  border-radius: var(--pill);
+  border: 1.5px solid var(--border-strong);
+  background: #000;
+  outline: none;
+  transition: border-color 0.2s var(--ease);
+}
+.factcheck__input::placeholder {
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  color: var(--text-faint);
+}
+.factcheck__input:focus {
+  border-color: var(--text);
+}
+.factcheck__examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+}
+.factcheck__examples button {
+  padding: 5px 12px;
+  border-radius: var(--pill);
+  border: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: var(--text-dim);
+  text-align: left;
+  transition: border-color 0.2s var(--ease), color 0.2s var(--ease);
+}
+.factcheck__examples button:hover:not(:disabled) {
+  border-color: var(--text);
+  color: var(--text);
+}
+.factcheck__examples button:disabled {
+  opacity: 0.5;
+}
+
+@media (max-width: 640px) {
+  .factcheck__form {
+    flex-direction: column;
+  }
+  .factcheck__form .pill {
+    align-self: flex-start;
+  }
+}

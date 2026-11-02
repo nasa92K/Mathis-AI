@@ -90,6 +90,14 @@ export default function AboutPage({ health }) {
             <dd>{health.model ?? 'Défini côté serveur'}</dd>
           </div>
           <div className="specs__row">
+            <dt>Vérification</dt>
+            <dd>
+              {health.webSearch === false
+                ? 'Recherche web désactivée'
+                : 'Recherche web + sources citées'}
+            </dd>
+          </div>
+          <div className="specs__row">
             <dt>Historique</dt>
             <dd>Stocké dans ton navigateur</dd>
           </div>

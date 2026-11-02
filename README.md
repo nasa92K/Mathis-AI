@@ -212,6 +212,7 @@ Les autres réglages sont dans `server/.env` :
 | `CLIENT_ORIGIN` | URLs du frontend autorisées (CORS), séparées par des virgules | `http://localhost:5173` |
 | `TRUST_PROXY` | Nombre de proxys devant le serveur (`1` sur Render) | `0` |
 | `RATE_LIMIT_PER_MINUTE` | Nombre de messages autorisés par minute et par IP | `20` |
+| `MATHIS_WEB_SEARCH` | Recherche web pour vérifier les faits et citer des sources (modèles gpt-oss) | `true` |
 
 > 💡 L'offre gratuite de Groq a des limites par minute et par jour (voir <https://console.groq.com/settings/limits>). `MAX_TOKENS` et `MAX_HISTORY_CHARS` sont réglés pour rester en dessous ; `MATHIS_EFFORT=low` économise encore des tokens.
 
@@ -226,6 +227,14 @@ Les autres réglages sont dans `server/.env` :
 - Bouton pour copier une réponse, et bouton pour régénérer la dernière réponse
 - Bouton **Arrêter** (ou touche `Échap`) pour couper la génération en cours
 - Animation de réflexion façon voyants de passage de rapport (« Mathis fait monter les tours… »), puis défilement automatique (il ne force pas le défilement si tu es remonté lire plus haut)
+
+**Vérification des faits**
+- Mathis cherche sur le web (outil `browser_search` de Groq) quand il faut vérifier une info, une actualité ou un chiffre précis. Il ne cherche pas pour les questions générales.
+- Il donne un verdict clair : ✅ Vrai, ❌ Faux, ⚠️ En partie vrai ou ❓ Impossible à vérifier.
+- Les **sources consultées** s'affichent sous la réponse. Les liens viennent de la recherche elle-même, jamais du texte du modèle : aucune URL inventée.
+- Pendant la recherche, l'interface affiche « Mathis vérifie ses sources… » avec la requête en cours.
+- Encart **Vrai ou faux ?** dans Le Garage pour coller une info à vérifier.
+- Si la recherche n'est pas disponible (outil refusé, quota gratuit dépassé), Mathis répond quand même et l'interface indique que la réponse n'a pas été vérifiée en ligne.
 
 **Conversations**
 - Historique dans la barre latérale, conservé après actualisation (`localStorage`)
@@ -313,7 +322,6 @@ En cas d'erreur : `data: {"type":"error","code":"rate_limited","message":"..."}`
 
 ## Pistes d'évolution
 
-- Recherche web (outil `web_search` de l'API) pour répondre sur l'actualité avec des sources
 - Comptes utilisateurs et base de données à la place du `localStorage`
 - Envoi d'images, par exemple pour diagnostiquer un voyant du tableau de bord
 - Déploiement : `npm run build` génère `client/dist/`, à servir avec le backend ou sur un hébergeur statique

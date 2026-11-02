@@ -18,6 +18,9 @@ services:
         value: openai/gpt-oss-120b
       - key: MATHIS_EFFORT
         value: low
+      # Recherche web pour vérifier les faits (mettre "false" pour la couper)
+      - key: MATHIS_WEB_SEARCH
+        value: "true"
       # Adresse du site HubSpot (+ Vite en local), séparées par des virgules
       - key: CLIENT_ORIGIN
         value: https://149687516.hs-sites-eu1.com,http://localhost:5173

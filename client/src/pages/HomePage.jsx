@@ -24,6 +24,7 @@ const SPECS = [
   { label: 'Couple', value: 'Humour sarcastique, max' },
   { label: 'Spécialités', value: 'Auto · Méca · Aviation' },
   { label: 'Carrosserie', value: 'React + Vite' },
+  { label: 'Contrôle technique', value: 'Infos vérifiées sur le web' },
   { label: 'Consommation', value: '0 L / 100 km' },
 ];
 

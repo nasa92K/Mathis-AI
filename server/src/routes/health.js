@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { config } from '../config.js';
+import { config, isWebSearchEnabled } from '../config.js';
 import { checkAiAvailability } from '../services/aiService.js';
 
 const router = Router();
@@ -16,6 +16,7 @@ router.get('/health', async (_req, res) => {
     ai,
     model: config.model,
     effort: config.effort,
+    webSearch: isWebSearchEnabled(),
   });
 });
 

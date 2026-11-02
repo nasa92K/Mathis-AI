@@ -17,6 +17,7 @@ export function useHealth() {
       message: data.ai?.message ?? '',
       model: data.model ?? null,
       effort: data.effort ?? null,
+      webSearch: data.webSearch ?? null,
     });
   }, []);
 

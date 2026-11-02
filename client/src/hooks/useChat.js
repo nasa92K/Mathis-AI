@@ -31,7 +31,22 @@ export function useChat({ store, settings }) {
         if (!pending) return;
         const chunk = pending;
         pending = '';
-        patchMessage(conversationId, assistantId, (m) => ({ ...m, content: m.content + chunk }));
+        // Le texte arrive : la recherche web est terminée.
+        patchMessage(conversationId, assistantId, (m) => ({ ...m, content: m.content + chunk, searching: null }));
+      };
+
+      // Recherche web : requête en cours, sources consultées, recherche indisponible.
+      const onMeta = (event) => {
+        patchMessage(conversationId, assistantId, (m) => {
+          if (event.type === 'status') return { ...m, searching: { query: event.query ?? null } };
+          if (event.type === 'sources') {
+            const known = new Set((m.sources ?? []).map((s) => s.url));
+            const fresh = event.sources.filter((s) => !known.has(s.url));
+            return { ...m, sources: [...(m.sources ?? []), ...fresh] };
+          }
+          if (event.type === 'search_unavailable') return { ...m, searchUnavailable: true };
+          return m;
+        });
       };
 
       try {
@@ -43,19 +58,21 @@ export function useChat({ store, settings }) {
             pending += text;
             if (!flushTimer) flushTimer = setTimeout(flush, 40);
           },
+          onMeta,
         });
         clearTimeout(flushTimer);
         flush();
-        patchMessage(conversationId, assistantId, (m) => ({ ...m, status: 'done' }));
+        patchMessage(conversationId, assistantId, (m) => ({ ...m, status: 'done', searching: null }));
       } catch (error) {
         clearTimeout(flushTimer);
         flush();
         if (error.name === 'AbortError') {
-          patchMessage(conversationId, assistantId, (m) => ({ ...m, status: 'stopped' }));
+          patchMessage(conversationId, assistantId, (m) => ({ ...m, status: 'stopped', searching: null }));
         } else {
           patchMessage(conversationId, assistantId, (m) => ({
             ...m,
             status: 'error',
+            searching: null,
             error: { code: error.code ?? 'unknown_error', message: error.message },
           }));
         }

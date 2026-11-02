@@ -42,9 +42,10 @@ async function readErrorBody(response) {
  * @param {string} options.responseStyle
  * @param {AbortSignal} options.signal  permet d'arrêter la génération
  * @param {(text: string) => void} options.onDelta  appelé à chaque morceau reçu
+ * @param {(event: object) => void} [options.onMeta]  recherche web : { type: 'status' | 'sources' | 'search_unavailable', … }
  * @returns {Promise<{stopReason: string, model: string}>}
  */
-export async function streamChat({ messages, responseStyle, signal, onDelta }) {
+export async function streamChat({ messages, responseStyle, signal, onDelta, onMeta = () => {} }) {
   let response;
   try {
     response = await fetch(`${API_BASE}/api/chat`, {
@@ -98,6 +99,7 @@ export async function streamChat({ messages, responseStyle, signal, onDelta }) {
       if (event.type === 'delta') onDelta(event.text);
       else if (event.type === 'done') result = event;
       else if (event.type === 'error') throw new ChatError(event.message, event.code);
+      else if (['status', 'sources', 'search_unavailable'].includes(event.type)) onMeta(event);
     }
   }
 
