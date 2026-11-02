@@ -86,8 +86,16 @@ export async function checkAiAvailability() {
 
   let value;
   try {
-    await getClient().models.retrieve(config.model);
-    value = { status: 'online', message: 'Mathis AI est en ligne.' };
+    // La liste plutôt que models.retrieve : le "/" des noms comme
+    // "openai/gpt-oss-120b" casse l'URL de récupération d'un seul modèle.
+    const { data } = await getClient().models.list();
+    value = data.some((model) => model.id === config.model)
+      ? { status: 'online', message: 'Mathis AI est en ligne.' }
+      : {
+          status: 'offline',
+          code: 'model_not_found',
+          message: `Le modèle "${config.model}" est introuvable. Vérifie GROQ_MODEL dans server/.env.`,
+        };
   } catch (error) {
     const mapped = mapAiError(error);
     value = { status: 'offline', message: mapped.message, code: mapped.code };
