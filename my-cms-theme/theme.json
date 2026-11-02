@@ -1,0 +1,9 @@
+{
+  "label": "Mathis AI",
+  "preview_path": "./templates/mathis-ai.html",
+  "author": {
+    "name": "Mathis AI",
+    "email": "anas.92fekh@gmail.com"
+  },
+  "version": "1.0"
+}

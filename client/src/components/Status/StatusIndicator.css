@@ -1,0 +1,75 @@
+.status {
+  --status-color: var(--text-faint);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: rgba(17, 24, 39, 0.7);
+  border: 1px solid var(--border);
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease);
+}
+.status:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-2);
+}
+
+.status__dot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--status-color);
+}
+.status__dot::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: var(--status-color);
+  opacity: 0;
+}
+
+.status--online {
+  --status-color: var(--success);
+}
+.status--online .status__dot::after {
+  animation: ping 2.2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+.status--checking {
+  --status-color: var(--accent);
+}
+.status--checking .status__dot {
+  animation: pulse-glow 1s ease-in-out infinite;
+}
+.status--not_configured {
+  --status-color: var(--warning);
+}
+.status--offline,
+.status--server_down {
+  --status-color: var(--danger);
+}
+
+@keyframes ping {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.6;
+  }
+  80%,
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .status--compact .status__label {
+    display: none;
+  }
+  .status--compact {
+    padding: 8px;
+  }
+}

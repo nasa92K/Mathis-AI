@@ -1,0 +1,403 @@
+/* ─── Liste des messages ─────────────────────────────── */
+.message-list-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+.message-list {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.message-list__inner {
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: 28px 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.jump-bottom {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  color: var(--text);
+  background: var(--surface-3);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow);
+  animation: fade-in 0.2s ease;
+  transition: background 0.2s var(--ease);
+}
+.jump-bottom:hover {
+  background: #26334a;
+}
+
+/* ─── Messages ───────────────────────────────────────── */
+.message {
+  display: flex;
+  animation: fade-up 0.38s var(--ease) both;
+}
+
+.message--user {
+  justify-content: flex-end;
+}
+
+.message__user-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  max-width: min(78%, 620px);
+}
+
+.message__bubble {
+  padding: 11px 16px;
+  border-radius: var(--radius-lg) var(--radius-lg) 4px var(--radius-lg);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(139, 92, 246, 0.9));
+  box-shadow: 0 6px 24px rgba(79, 70, 229, 0.22);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.message--assistant {
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.message__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.message__name {
+  margin: 4px 0 4px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.86rem;
+  letter-spacing: 0.03em;
+  color: var(--text-dim);
+}
+
+.message__note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  background: rgba(148, 163, 184, 0.08);
+}
+
+.message__actions {
+  display: flex;
+  gap: 2px;
+  margin-top: 8px;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+.message:hover .message__actions,
+.message:focus-within .message__actions {
+  opacity: 1;
+}
+.message__actions--user {
+  margin-top: 4px;
+  opacity: 0;
+}
+
+.msg-action {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  color: var(--text-dim);
+  transition: background 0.2s var(--ease), color 0.2s var(--ease);
+}
+.msg-action:hover {
+  color: var(--text);
+  background: rgba(148, 163, 184, 0.1);
+}
+
+/* Curseur pendant l'écriture */
+.is-typing .markdown > :last-child::after {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 1.05em;
+  margin-left: 3px;
+  vertical-align: -0.15em;
+  border-radius: 2px;
+  background: var(--gradient);
+  animation: caret 1s steps(2) infinite;
+}
+.is-typing .markdown > pre:last-child::after,
+.is-typing .markdown > div:last-child::after,
+.is-typing .markdown > ul:last-child::after,
+.is-typing .markdown > ol:last-child::after {
+  display: none;
+}
+@keyframes caret {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* ─── Indicateur de réflexion ────────────────────────── */
+.typing {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  background: var(--glass);
+  border: 1px solid var(--border);
+}
+.typing__dots {
+  display: inline-flex;
+  gap: 4px;
+}
+.typing__dots span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gradient);
+  animation: bounce 1.2s ease-in-out infinite;
+}
+.typing__dots span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.typing__dots span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.typing__label {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+@keyframes bounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  40% {
+    transform: translateY(-5px);
+    opacity: 1;
+  }
+}
+
+/* ─── Carte d'erreur ─────────────────────────────────── */
+.error-card {
+  display: flex;
+  gap: 12px;
+  margin-top: 6px;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  background: var(--danger-soft);
+  border: 1px solid rgba(239, 68, 68, 0.28);
+  animation: fade-up 0.3s var(--ease);
+}
+.error-card__icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #f87171;
+}
+.error-card__title {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: #fecaca;
+}
+.error-card__message {
+  margin: 2px 0 0;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+.error-card__retry {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  font-weight: 500;
+  background: rgba(239, 68, 68, 0.18);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  transition: background 0.2s var(--ease);
+}
+.error-card__retry:hover {
+  background: rgba(239, 68, 68, 0.28);
+}
+
+/* ─── Markdown ───────────────────────────────────────── */
+.markdown {
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+.markdown > :first-child {
+  margin-top: 0;
+}
+.markdown > :last-child {
+  margin-bottom: 0;
+}
+.markdown p {
+  margin: 0 0 0.85em;
+}
+.markdown strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4 {
+  margin: 1.3em 0 0.5em;
+  font-family: var(--font-display);
+  color: var(--text);
+  line-height: 1.3;
+}
+.markdown h1 {
+  font-size: 1.35rem;
+}
+.markdown h2 {
+  font-size: 1.2rem;
+}
+.markdown h3 {
+  font-size: 1.06rem;
+}
+.markdown ul,
+.markdown ol {
+  margin: 0 0 0.85em;
+  padding-left: 1.4em;
+}
+.markdown li {
+  margin: 0.25em 0;
+}
+.markdown li::marker {
+  color: #818cf8;
+}
+.markdown blockquote {
+  margin: 0 0 0.85em;
+  padding: 4px 14px;
+  border-left: 3px solid var(--accent-2);
+  color: var(--text-dim);
+  background: rgba(139, 92, 246, 0.06);
+  border-radius: 0 8px 8px 0;
+}
+.markdown hr {
+  border: none;
+  height: 1px;
+  margin: 1.4em 0;
+  background: var(--border-strong);
+}
+.markdown .inline-code {
+  padding: 0.12em 0.4em;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  color: #c4b5fd;
+  background: rgba(139, 92, 246, 0.12);
+}
+
+.table-wrapper {
+  margin: 0 0 1em;
+  overflow-x: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.markdown th,
+.markdown td {
+  padding: 9px 13px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.markdown th {
+  color: var(--text);
+  font-weight: 600;
+  background: rgba(59, 130, 246, 0.08);
+}
+.markdown tr:last-child td {
+  border-bottom: none;
+}
+
+/* ─── Bloc de code ───────────────────────────────────── */
+.code-block {
+  margin: 0 0 1em;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #0b101c;
+  border: 1px solid var(--border);
+}
+.code-block__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px 6px 14px;
+  background: rgba(148, 163, 184, 0.06);
+  border-bottom: 1px solid var(--border);
+}
+.code-block__lang {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: var(--text-dim);
+  text-transform: lowercase;
+}
+.code-block__copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border-radius: 7px;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  transition: background 0.2s var(--ease), color 0.2s var(--ease);
+}
+.code-block__copy:hover {
+  color: var(--text);
+  background: rgba(148, 163, 184, 0.1);
+}
+.code-block pre {
+  overflow-x: auto;
+}
+
+@media (max-width: 640px) {
+  .message-list__inner {
+    padding: 20px 14px 18px;
+    gap: 22px;
+  }
+  .message__user-wrap {
+    max-width: 88%;
+  }
+  .message--assistant {
+    gap: 10px;
+  }
+  .message--assistant .mathis-avatar {
+    width: 28px !important;
+    height: 28px !important;
+  }
+  .message--assistant .mathis-avatar svg {
+    width: 28px;
+    height: 28px;
+  }
+  .message__actions,
+  .message__actions--user {
+    opacity: 1;
+  }
+}

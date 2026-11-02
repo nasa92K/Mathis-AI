@@ -1,0 +1,15 @@
+node_modules/
+dist/
+
+# Secrets : ne jamais commiter les clés API
+.env
+.env.*
+!.env.example
+# Adresse publique du backend pour le build HubSpot (pas un secret)
+!client/.env.hubspot
+
+npm-debug.log*
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json

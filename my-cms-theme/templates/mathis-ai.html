@@ -1,0 +1,29 @@
+<!--
+  templateType: page
+  label: Mathis AI - Chatbot
+  isAvailableForNewContent: true
+-->
+<!doctype html>
+<html lang="{{ html_lang }}">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#080B12" />
+    <meta name="description" content="{{ content.meta_description }}" />
+    <title>{{ content.html_title }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    {# Interface React construite par "npm run build:hubspot" (dossier app/) #}
+    <link rel="stylesheet" href="{{ get_asset_url('../app/mathis-ai.css') }}" />
+    {{ standard_header_includes }}
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="{{ get_asset_url('../app/mathis-ai.js') }}"></script>
+    {{ standard_footer_includes }}
+  </body>
+</html>

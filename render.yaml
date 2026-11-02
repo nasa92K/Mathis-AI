@@ -1,0 +1,24 @@
+# Déploiement du backend Express sur Render (https://render.com) — offre gratuite.
+# Render → New → Blueprint → choisir ce dépôt GitHub. La clé API se saisit dans
+# le tableau de bord Render, elle n'est jamais écrite ici.
+services:
+  - type: web
+    name: mathis-ai-api
+    runtime: node
+    rootDir: server
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ANTHROPIC_MODEL
+        value: claude-opus-5-5
+      - key: MATHIS_EFFORT
+        value: medium
+      # Adresse du site HubSpot (+ Vite en local), séparées par des virgules
+      - key: CLIENT_ORIGIN
+        value: https://149687516.hs-sites-eu1.com,http://localhost:5173
+      - key: TRUST_PROXY
+        value: "1"
