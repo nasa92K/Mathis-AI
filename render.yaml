@@ -11,12 +11,13 @@ services:
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
-      - key: ANTHROPIC_API_KEY
+      # Clé gratuite à créer sur https://console.groq.com/keys
+      - key: GROQ_API_KEY
         sync: false
-      - key: ANTHROPIC_MODEL
-        value: claude-opus-5-5
+      - key: GROQ_MODEL
+        value: openai/gpt-oss-120b
       - key: MATHIS_EFFORT
-        value: medium
+        value: low
       # Adresse du site HubSpot (+ Vite en local), séparées par des virgules
       - key: CLIENT_ORIGIN
         value: https://149687516.hs-sites-eu1.com,http://localhost:5173

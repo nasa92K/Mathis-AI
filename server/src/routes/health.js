@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { config } from '../config.js';
-import { checkAiAvailability } from '../services/claudeService.js';
+import { checkAiAvailability } from '../services/aiService.js';
 
 const router = Router();
 

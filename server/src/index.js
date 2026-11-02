@@ -35,6 +35,6 @@ app.listen(config.port, () => {
   console.log(`\n  🚀 MATHIS AI — backend prêt sur http://localhost:${config.port}`);
   console.log(`     Modèle : ${config.model} (effort : ${config.effort})`);
   if (!isApiKeyConfigured()) {
-    console.warn('  ⚠️  ANTHROPIC_API_KEY manquante : copie server/.env.example en server/.env et ajoute ta clé.\n');
+    console.warn('  ⚠️  GROQ_API_KEY manquante : copie server/.env.example en server/.env et ajoute ta clé.\n');
   }
 });

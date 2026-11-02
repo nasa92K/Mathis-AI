@@ -2,7 +2,7 @@ import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { config, isApiKeyConfigured } from '../config.js';
 import { validateChat } from '../middleware/validateChat.js';
-import { Anthropic, mapAnthropicError, streamMathisReply } from '../services/claudeService.js';
+import { Groq, mapAiError, streamMathisReply } from '../services/aiService.js';
 
 const router = Router();
 
@@ -31,7 +31,7 @@ router.post('/chat', chatLimiter, validateChat, async (req, res) => {
     return res.status(503).json({
       error: {
         code: 'not_configured',
-        message: "Mathis AI n'est pas encore branché à l'IA : ajoute ANTHROPIC_API_KEY dans server/.env puis redémarre le serveur.",
+        message: "Mathis AI n'est pas encore branché à l'IA : ajoute GROQ_API_KEY dans server/.env puis redémarre le serveur.",
       },
     });
   }
@@ -47,42 +47,31 @@ router.post('/chat', chatLimiter, validateChat, async (req, res) => {
     if (!res.writableEnded) res.write(`data: ${JSON.stringify(payload)}\n\n`);
   };
 
-  const stream = streamMathisReply(req.chat);
-
   // Si le client ferme la connexion (bouton "Arrêter"), on coupe la génération.
+  const controller = new AbortController();
   let clientGone = false;
   res.on('close', () => {
     if (!res.writableFinished) {
       clientGone = true;
-      stream.abort();
+      controller.abort();
     }
   });
 
   try {
-    for await (const event of stream) {
-      if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
-        send({ type: 'delta', text: event.delta.text });
+    for await (const event of streamMathisReply({ ...req.chat, signal: controller.signal })) {
+      if (event.type === 'done' && event.stopReason === 'content_filter') {
+        send({
+          type: 'error',
+          code: 'refusal',
+          message: "Mathis AI ne peut pas répondre à cette demande. Essaie de la reformuler autrement.",
+        });
+      } else {
+        send(event);
       }
     }
-
-    const finalMessage = await stream.finalMessage();
-
-    if (finalMessage.stop_reason === 'refusal') {
-      send({
-        type: 'error',
-        code: 'refusal',
-        message: "Mathis AI ne peut pas répondre à cette demande. Essaie de la reformuler autrement.",
-      });
-    } else {
-      send({
-        type: 'done',
-        stopReason: finalMessage.stop_reason,
-        model: finalMessage.model,
-      });
-    }
   } catch (error) {
-    if (clientGone || error instanceof Anthropic.APIUserAbortError) return;
-    const mapped = mapAnthropicError(error);
+    if (clientGone || error instanceof Groq.APIUserAbortError) return;
+    const mapped = mapAiError(error);
     console.error(`[chat] ${mapped.code}:`, error?.message ?? error);
     send({ type: 'error', code: mapped.code, message: mapped.message });
   } finally {

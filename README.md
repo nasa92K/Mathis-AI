@@ -2,7 +2,7 @@
 
 > **Built different. Powered by AI.**
 
-Mathis AI est un chatbot web qui a une vraie personnalité : décontracté, drôle, très cultivé et fan d'automobile, de mécanique et d'aviation (surtout d'Ace Combat). Les réponses sont générées par un modèle de langage, **Claude** d'Anthropic, et s'affichent en streaming.
+Mathis AI est un chatbot web qui a une vraie personnalité : décontracté, drôle, très cultivé et fan d'automobile, de mécanique et d'aviation (surtout d'Ace Combat). Les réponses sont générées par un modèle de langage open source (`gpt-oss-120b`) via l'API gratuite de **Groq**, et s'affichent en streaming.
 
 - **Frontend** : React + Vite (JavaScript), CSS moderne et responsive, icônes Lucide React
 - **Backend** : Node.js + Express. C'est lui qui appelle l'API d'IA : la clé API ne quitte jamais le serveur.
@@ -27,7 +27,7 @@ projet Mathis AI/
 │       ├── prompts/
 │       │   └── mathisPersonality.js   # ⭐ PROMPT SYSTÈME : la personnalité de Mathis AI
 │       ├── services/
-│       │   └── claudeService.js  # Appel à l'API Claude (streaming) + traduction des erreurs
+│       │   └── aiService.js      # Appel à l'API Groq (streaming) + traduction des erreurs
 │       ├── middleware/
 │       │   └── validateChat.js   # Validation des messages reçus
 │       └── routes/
@@ -70,7 +70,7 @@ projet Mathis AI/
 ## Prérequis
 
 - **Node.js 20 ou plus récent** (`node -v` pour vérifier)
-- Une **clé API Anthropic** : à créer sur <https://console.anthropic.com/settings/keys>. Il faut des crédits sur le compte, car chaque message consomme des tokens.
+- Une **clé API Groq** (gratuite, sans carte bancaire) : à créer sur <https://console.groq.com/keys>.
 
 ---
 
@@ -105,10 +105,10 @@ Copy-Item server/.env.example server/.env
 cp server/.env.example server/.env
 ```
 
-Ouvre ensuite `server/.env` et remplace la valeur de `ANTHROPIC_API_KEY` :
+Ouvre ensuite `server/.env` et remplace la valeur de `GROQ_API_KEY` :
 
 ```env
-ANTHROPIC_API_KEY=sk-ant-ta-vraie-cle
+GROQ_API_KEY=gsk_ta-vraie-cle
 ```
 
 > ⚠️ Le fichier `.env` est ignoré par Git. Ne le partage jamais et ne mets jamais la clé dans le code du frontend.
@@ -149,7 +149,7 @@ npm run dev
 
 Le site HubSpot n'héberge que l'interface. Le backend Express tourne ailleurs (Render), car HubSpot ne fait pas tourner de serveur Node.
 
-1. **Backend** : pousser le projet sur GitHub, puis Render → *New* → *Blueprint* (lit `render.yaml`). Saisir `ANTHROPIC_API_KEY` dans Render. Vérifier que `CLIENT_ORIGIN` contient l'adresse du site HubSpot.
+1. **Backend** : pousser le projet sur GitHub, puis Render → *New* → *Blueprint* (lit `render.yaml`). Saisir `GROQ_API_KEY` dans Render. Vérifier que `CLIENT_ORIGIN` contient l'adresse du site HubSpot.
 2. **Adresse du backend** : mettre l'URL Render dans `client/.env.hubspot` (`VITE_API_URL`).
 3. **Interface** : `npm run deploy:hubspot` construit le bundle React dans `my-cms-theme/app/` et envoie le thème dans le Design Manager (CLI `hs`, compte déjà connecté).
 4. La page HubSpot utilise le modèle **Mathis AI - Chatbot** (`my-cms-theme/templates/mathis-ai.html`). Après un nouveau déploiement, elle se met à jour toute seule.
@@ -171,16 +171,17 @@ Les autres réglages sont dans `server/.env` :
 
 | Variable | Rôle | Défaut |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | Clé API (obligatoire) | — |
-| `ANTHROPIC_MODEL` | Modèle Claude utilisé | `claude-opus-5-5` |
-| `MATHIS_EFFORT` | Profondeur de réflexion : `low`, `medium`, `high`, `xhigh`, `max` | `medium` |
-| `MAX_TOKENS` | Longueur maximale d'une réponse (en tokens) | `64000` |
-| `MATHIS_ENABLE_FALLBACKS` | Repli automatique sur un autre modèle si une demande est refusée par erreur | `true` |
+| `GROQ_API_KEY` | Clé API Groq (obligatoire, gratuite) | — |
+| `GROQ_MODEL` | Modèle utilisé | `openai/gpt-oss-120b` |
+| `MATHIS_EFFORT` | Profondeur de réflexion : `low`, `medium`, `high` | `medium` |
+| `MAX_TOKENS` | Longueur maximale d'une réponse (en tokens) | `2048` |
+| `MAX_HISTORY_CHARS` | Taille max de l'historique envoyé à l'IA (caractères) | `8000` |
 | `PORT` | Port du backend | `3001` |
-| `CLIENT_ORIGIN` | URL du frontend autorisée (CORS) | `http://localhost:5173` |
+| `CLIENT_ORIGIN` | URLs du frontend autorisées (CORS), séparées par des virgules | `http://localhost:5173` |
+| `TRUST_PROXY` | Nombre de proxys devant le serveur (`1` sur Render) | `0` |
 | `RATE_LIMIT_PER_MINUTE` | Nombre de messages autorisés par minute et par IP | `20` |
 
-> 💡 Pour réduire le coût, tu peux passer `MATHIS_EFFORT=low` (réponses plus rapides et moins chères, souvent suffisantes pour discuter) ou utiliser un modèle moins cher comme `claude-sonnet-5-5`.
+> 💡 L'offre gratuite de Groq a des limites par minute et par jour (voir <https://console.groq.com/settings/limits>). `MAX_TOKENS` et `MAX_HISTORY_CHARS` sont réglés pour rester en dessous ; `MATHIS_EFFORT=low` économise encore des tokens.
 
 ---
 
@@ -234,7 +235,7 @@ Les autres réglages sont dans `server/.env` :
 ### `GET /api/health`
 
 ```json
-{ "server": "ok", "ai": { "status": "online", "message": "Mathis AI est en ligne." }, "model": "claude-opus-5-5", "effort": "medium" }
+{ "server": "ok", "ai": { "status": "online", "message": "Mathis AI est en ligne." }, "model": "openai/gpt-oss-120b", "effort": "low" }
 ```
 
 Valeurs possibles de `ai.status` : `online`, `offline`, `not_configured`.
@@ -257,7 +258,7 @@ La réponse est un flux `text/event-stream`. Chaque événement est au format `d
 ```
 data: {"type":"delta","text":"Tbh, la M3 G80 "}
 data: {"type":"delta","text":"c'est une sacrée machine 💀"}
-data: {"type":"done","stopReason":"end_turn","model":"claude-opus-5-5"}
+data: {"type":"done","stopReason":"stop","model":"openai/gpt-oss-120b"}
 ```
 
 En cas d'erreur : `data: {"type":"error","code":"rate_limited","message":"..."}`.
@@ -268,11 +269,11 @@ En cas d'erreur : `data: {"type":"error","code":"rate_limited","message":"..."}`
 
 | Problème | Solution |
 |---|---|
-| Pastille « Clé API manquante » | Crée `server/.env` avec `ANTHROPIC_API_KEY`, puis redémarre le backend. |
+| Pastille « Clé API manquante » | Crée `server/.env` avec `GROQ_API_KEY`, puis redémarre le backend. |
 | Pastille « Serveur hors ligne » | Le backend n'est pas lancé : `cd server && npm run dev`. |
-| « La clé API est invalide » | Vérifie la clé sur console.anthropic.com et l'absence d'espaces autour. |
+| « La clé API est invalide » | Vérifie la clé sur console.groq.com et l'absence d'espaces autour. |
 | « Trop de requêtes » | Attends une minute, ou augmente `RATE_LIMIT_PER_MINUTE`. |
-| Erreur 400 qui mentionne `fallbacks` | Mets `MATHIS_ENABLE_FALLBACKS=false` dans `server/.env`. |
+| « Limite gratuite de l'IA atteinte » | Quota Groq épuisé : attends une minute (ou le lendemain), ou baisse `MAX_TOKENS` / `MAX_HISTORY_CHARS`. |
 | Le port 3001 ou 5173 est déjà pris | Change `PORT` dans `.env`, et la cible du proxy dans `client/vite.config.js`. |
 
 ---

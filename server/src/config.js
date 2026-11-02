@@ -1,6 +1,7 @@
 import 'dotenv/config';
 
-const EFFORT_LEVELS = ['low', 'medium', 'high', 'xhigh', 'max'];
+// Niveaux de réflexion acceptés par les modèles gpt-oss de Groq
+const EFFORT_LEVELS = ['low', 'medium', 'high'];
 
 function toInt(value, fallback) {
   const n = Number.parseInt(value, 10);
@@ -19,11 +20,13 @@ export const config = {
   // Nombre de proxys devant le serveur (1 sur Render) : nécessaire pour que la
   // limite de requêtes voie la vraie IP du visiteur.
   trustProxy: toInt(process.env.TRUST_PROXY, 0),
-  apiKey: process.env.ANTHROPIC_API_KEY?.trim() || '',
-  model: process.env.ANTHROPIC_MODEL?.trim() || 'claude-opus-5-5',
+  apiKey: process.env.GROQ_API_KEY?.trim() || '',
+  model: process.env.GROQ_MODEL?.trim() || 'openai/gpt-oss-120b',
   effort: EFFORT_LEVELS.includes(effort) ? effort : 'medium',
-  maxTokens: toInt(process.env.MAX_TOKENS, 64000),
-  enableFallbacks: (process.env.MATHIS_ENABLE_FALLBACKS ?? 'true').toLowerCase() !== 'false',
+  // L'offre gratuite de Groq limite chaque requête (~8 000 tokens/min, réponse comprise) :
+  // réponse plafonnée et historique raccourci pour rester en dessous.
+  maxTokens: toInt(process.env.MAX_TOKENS, 2048),
+  maxHistoryChars: toInt(process.env.MAX_HISTORY_CHARS, 8000),
   rateLimitPerMinute: toInt(process.env.RATE_LIMIT_PER_MINUTE, 20),
 
   // Limites de validation des messages entrants

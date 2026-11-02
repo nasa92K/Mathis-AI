@@ -1,20 +1,12 @@
-import Anthropic from '@anthropic-ai/sdk';
+import Groq from 'groq-sdk';
 import { config, isApiKeyConfigured } from '../config.js';
 import { MATHIS_PERSONALITY, buildContextPrompt } from '../prompts/mathisPersonality.js';
-
-// Modèles qui acceptent le repli automatique "fallbacks: default" côté serveur.
-const FALLBACK_CAPABLE_MODELS = new Set([
-  'claude-fable-5-1',
-  'claude-opus-5-5',
-  'claude-opus-5',
-  'claude-sonnet-5-5',
-]);
 
 let client = null;
 
 function getClient() {
   if (!client) {
-    client = new Anthropic({
+    client = new Groq({
       apiKey: config.apiKey,
       maxRetries: 2, // relance automatique sur 429 / 5xx / erreurs réseau
     });
@@ -23,37 +15,56 @@ function getClient() {
 }
 
 /**
- * Ouvre un flux de réponse de Mathis AI.
- * @param {{ messages: Array<{role: 'user'|'assistant', content: string}>, responseStyle?: string }} options
- * @returns Un MessageStream du SDK (itérable, avec .abort() et .finalMessage()).
+ * Garde les messages les plus récents dans la limite de caractères,
+ * en commençant toujours par un message utilisateur.
  */
-export function streamMathisReply({ messages, responseStyle }) {
+function trimHistory(messages) {
+  const kept = [];
+  let total = 0;
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    total += messages[i].content.length;
+    if (total > config.maxHistoryChars && kept.length > 0) break;
+    kept.unshift(messages[i]);
+  }
+  while (kept.length > 1 && kept[0].role !== 'user') kept.shift();
+  return kept;
+}
+
+/**
+ * Génère la réponse de Mathis AI en streaming.
+ * Produit { type: 'delta', text } pour chaque morceau, puis { type: 'done', stopReason, model }.
+ * @param {{ messages: Array<{role: 'user'|'assistant', content: string}>, responseStyle?: string, signal?: AbortSignal }} options
+ */
+export async function* streamMathisReply({ messages, responseStyle, signal }) {
   const params = {
     model: config.model,
-    max_tokens: config.maxTokens,
-    output_config: { effort: config.effort },
-    // Met en cache automatiquement l'historique de la conversation.
-    cache_control: { type: 'ephemeral' },
-    system: [
-      // Bloc stable : la personnalité (mise en cache).
-      { type: 'text', text: MATHIS_PERSONALITY, cache_control: { type: 'ephemeral' } },
-      // Bloc variable : date + style de réponse.
-      { type: 'text', text: buildContextPrompt({ responseStyle }) },
+    max_completion_tokens: config.maxTokens,
+    stream: true,
+    messages: [
+      { role: 'system', content: `${MATHIS_PERSONALITY}\n\n${buildContextPrompt({ responseStyle })}` },
+      ...trimHistory(messages),
     ],
-    messages,
   };
 
-  const anthropic = getClient();
-
-  if (config.enableFallbacks && FALLBACK_CAPABLE_MODELS.has(config.model)) {
-    return anthropic.beta.messages.stream({
-      ...params,
-      betas: ['server-side-fallback-2026-07-01'],
-      fallbacks: 'default',
-    });
+  // Les modèles gpt-oss réfléchissent avant de répondre : on règle l'effort
+  // et on ne renvoie que la réponse finale.
+  if (config.model.startsWith('openai/gpt-oss')) {
+    params.reasoning_effort = config.effort;
+    params.include_reasoning = false;
   }
 
-  return anthropic.messages.stream(params);
+  const stream = await getClient().chat.completions.create(params, { signal });
+
+  let stopReason = null;
+  let model = config.model;
+  for await (const chunk of stream) {
+    if (chunk.model) model = chunk.model;
+    const choice = chunk.choices?.[0];
+    if (choice?.delta?.content) yield { type: 'delta', text: choice.delta.content };
+    if (choice?.finish_reason) stopReason = choice.finish_reason;
+  }
+
+  yield { type: 'done', stopReason, model };
 }
 
 /**
@@ -78,7 +89,7 @@ export async function checkAiAvailability() {
     await getClient().models.retrieve(config.model);
     value = { status: 'online', message: 'Mathis AI est en ligne.' };
   } catch (error) {
-    const mapped = mapAnthropicError(error);
+    const mapped = mapAiError(error);
     value = { status: 'offline', message: mapped.message, code: mapped.code };
   }
 
@@ -90,36 +101,43 @@ export async function checkAiAvailability() {
  * Traduit une erreur du SDK en message clair pour l'utilisateur.
  * Les classes sont testées de la plus spécifique à la plus générale.
  */
-export function mapAnthropicError(error) {
-  if (error instanceof Anthropic.AuthenticationError) {
+export function mapAiError(error) {
+  if (error instanceof Groq.AuthenticationError) {
     return {
       status: 401,
       code: 'auth_error',
       message: 'La clé API configurée sur le serveur est invalide ou a expiré.',
     };
   }
-  if (error instanceof Anthropic.PermissionDeniedError) {
+  if (error instanceof Groq.PermissionDeniedError) {
     return {
       status: 403,
       code: 'permission_denied',
       message: "Cette clé API n'a pas accès au modèle demandé.",
     };
   }
-  if (error instanceof Anthropic.NotFoundError) {
+  if (error instanceof Groq.NotFoundError) {
     return {
       status: 404,
       code: 'model_not_found',
-      message: `Le modèle "${config.model}" est introuvable. Vérifie ANTHROPIC_MODEL dans server/.env.`,
+      message: `Le modèle "${config.model}" est introuvable. Vérifie GROQ_MODEL dans server/.env.`,
     };
   }
-  if (error instanceof Anthropic.RateLimitError) {
+  if (error instanceof Groq.RateLimitError) {
     return {
       status: 429,
       code: 'rate_limited',
-      message: "Trop de requêtes vers l'IA en ce moment. Patiente quelques secondes puis réessaie.",
+      message: "Mathis a atteint la limite gratuite de l'IA. Réessaie dans une minute (ou demain si le quota du jour est épuisé).",
     };
   }
-  if (error instanceof Anthropic.BadRequestError) {
+  if (error instanceof Groq.APIError && error.status === 413) {
+    return {
+      status: 413,
+      code: 'too_large',
+      message: 'Ce message est trop long pour la version gratuite. Raccourcis-le ou démarre une nouvelle conversation.',
+    };
+  }
+  if (error instanceof Groq.BadRequestError) {
     return {
       status: 400,
       code: 'bad_request',
@@ -127,28 +145,28 @@ export function mapAnthropicError(error) {
       detail: error.message,
     };
   }
-  if (error instanceof Anthropic.APIConnectionTimeoutError) {
+  if (error instanceof Groq.APIConnectionTimeoutError) {
     return {
       status: 504,
       code: 'timeout',
       message: "L'IA met trop de temps à répondre. Réessaie dans un instant.",
     };
   }
-  if (error instanceof Anthropic.APIConnectionError) {
+  if (error instanceof Groq.APIConnectionError) {
     return {
       status: 503,
       code: 'connection_error',
       message: "Impossible de joindre le service d'IA. Vérifie la connexion Internet du serveur.",
     };
   }
-  if (error instanceof Anthropic.APIError && error.status >= 500) {
+  if (error instanceof Groq.APIError && error.status >= 500) {
     return {
       status: 503,
       code: 'ai_unavailable',
       message: "Le service d'IA est momentanément surchargé ou indisponible. Réessaie dans un instant.",
     };
   }
-  if (error instanceof Anthropic.APIError) {
+  if (error instanceof Groq.APIError) {
     return {
       status: error.status || 500,
       code: 'api_error',
@@ -163,4 +181,4 @@ export function mapAnthropicError(error) {
   };
 }
 
-export { Anthropic };
+export { Groq };
