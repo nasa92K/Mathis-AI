@@ -5,17 +5,17 @@
   display: grid;
   place-items: center;
   padding: 20px;
-  background: rgba(3, 6, 12, 0.66);
-  backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
   animation: fade-in 0.18s ease;
 }
 
 .dialog {
-  width: min(420px, 100%);
-  padding: 24px;
+  width: min(440px, 100%);
+  padding: 28px;
   border-radius: var(--radius-lg);
   background: var(--surface);
-  border: 1px solid var(--border-strong);
+  border: 1.5px solid var(--border-strong);
   box-shadow: var(--shadow);
   animation: dialog-in 0.25s var(--ease);
 }
@@ -23,62 +23,44 @@
 .dialog__icon {
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  margin-bottom: 14px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  margin-bottom: 16px;
   color: var(--accent);
-  background: var(--accent-soft);
+  border: 1.5px solid currentColor;
 }
 .dialog__icon.is-danger {
   color: var(--danger);
-  background: var(--danger-soft);
 }
 
 .dialog__title {
-  margin: 0 0 6px;
+  margin: 0 0 8px;
   font-family: var(--font-display);
-  font-size: 1.15rem;
+  font-weight: 500;
+  font-size: 1.5rem;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
 }
 
 .dialog__description {
   margin: 0;
   color: var(--text-dim);
-  font-size: 0.93rem;
+  font-size: 0.94rem;
 }
 
 .dialog__actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  margin-top: 22px;
+  margin-top: 26px;
 }
 
-.dialog__btn {
-  padding: 9px 16px;
-  border-radius: 10px;
-  font-weight: 500;
-  font-size: 0.92rem;
-  background: var(--surface-3);
-  border: 1px solid var(--border);
-  transition: background 0.2s var(--ease), transform 0.15s var(--ease);
-}
-.dialog__btn:hover {
-  background: #26334a;
-}
-.dialog__btn:active {
-  transform: scale(0.97);
-}
-.dialog__btn--primary {
-  background: var(--gradient);
-  border-color: transparent;
-}
-.dialog__btn--primary:hover {
-  background: var(--gradient);
-  filter: brightness(1.1);
-}
-.dialog__btn--primary.is-danger {
+/* Le bouton de suppression reste bien visible avant le survol */
+.dialog__danger {
   background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
 }
 
 @keyframes dialog-in {

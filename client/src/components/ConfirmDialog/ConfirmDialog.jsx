@@ -74,12 +74,12 @@ export default function ConfirmDialog({
           {description}
         </p>
         <div className="dialog__actions">
-          <button ref={cancelRef} type="button" className="dialog__btn" onClick={onCancel}>
+          <button ref={cancelRef} type="button" className="pill pill--sm" onClick={onCancel}>
             {cancelLabel}
           </button>
           <button
             type="button"
-            className={`dialog__btn dialog__btn--primary ${danger ? 'is-danger' : ''}`}
+            className={`pill pill--sm ${danger ? 'pill--danger dialog__danger' : 'pill--solid'}`}
             onClick={onConfirm}
           >
             {confirmLabel}

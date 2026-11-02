@@ -1,52 +1,55 @@
 /* ═══════════════════════════════════════════════════════════
    MATHIS AI — thème global
+   Noir, gris et blanc, un seul accent magenta. Esprit garage / racing.
    ═══════════════════════════════════════════════════════════ */
 
 :root {
-  /* Couleurs principales */
-  --bg: #080b12;
-  --surface: #111827;
-  --surface-2: #161f33;
-  --surface-3: #1e293b;
-  --border: rgba(148, 163, 184, 0.12);
-  --border-strong: rgba(148, 163, 184, 0.22);
+  /* Couleurs */
+  --bg: #050505;
+  --bg-2: #0b0b0b;
+  --surface: #111111;
+  --surface-2: #181818;
+  --surface-3: #222222;
+  --border: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.3);
+  --line: rgba(255, 255, 255, 0.85);
 
-  --accent: #3b82f6;
-  --accent-2: #8b5cf6;
-  --accent-soft: rgba(59, 130, 246, 0.14);
-  --accent-2-soft: rgba(139, 92, 246, 0.14);
-  --gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  --text: #f5f5f5;
+  --text-muted: #cfcfcf;
+  --text-dim: #969696;
+  --text-faint: #606060;
 
-  --text: #f8fafc;
-  --text-muted: #cbd5e1;
-  --text-dim: #94a3b8;
-  --text-faint: #64748b;
+  --accent: #d63cf5; /* le « // » magenta */
+  --accent-strong: #e46bff;
+  --accent-soft: rgba(214, 60, 245, 0.14);
+  --accent-glow: rgba(214, 60, 245, 0.4);
 
-  --success: #22c55e;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-  --danger-soft: rgba(239, 68, 68, 0.12);
+  --success: #4ade80;
+  --warning: #facc15;
+  --danger: #ff4d4d;
+  --danger-soft: rgba(255, 77, 77, 0.12);
 
-  /* Verre dépoli */
-  --glass: rgba(17, 24, 39, 0.62);
-  --glass-blur: blur(18px) saturate(140%);
-
-  /* Typo */
+  /* Typographie */
   --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-display: 'Space Grotesk', var(--font-sans);
-  --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', Consolas, monospace;
+  --font-display: 'Inter Tight', 'Inter', system-ui, sans-serif;
+  --font-mono: 'Space Mono', ui-monospace, 'Cascadia Code', Consolas, monospace;
+  --font-code: 'JetBrains Mono', ui-monospace, Consolas, monospace;
 
   /* Formes */
   --radius-sm: 8px;
-  --radius: 12px;
-  --radius-lg: 18px;
-  --radius-xl: 24px;
-  --shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+  --radius: 14px;
+  --radius-lg: 20px;
+  --pill: 999px;
   --ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
+  --shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
 
-  --sidebar-width: 280px;
+  --nav-height: 84px;
   --content-width: 820px;
+  --page-width: 1280px;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Grain photo (texture discrète) */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
 
   color-scheme: dark;
 }
@@ -57,10 +60,14 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 html,
 body,
 #root {
-  height: 100%;
+  min-height: 100%;
 }
 
 body {
@@ -72,19 +79,6 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow: hidden;
-}
-
-/* Halo d'ambiance en arrière-plan */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(900px 500px at 85% -10%, rgba(139, 92, 246, 0.12), transparent 60%),
-    radial-gradient(800px 500px at 10% 110%, rgba(59, 130, 246, 0.1), transparent 60%);
-  z-index: 0;
 }
 
 button,
@@ -107,8 +101,13 @@ button:disabled {
 }
 
 a {
-  color: #93c5fd;
-  text-underline-offset: 3px;
+  color: inherit;
+  text-underline-offset: 4px;
+}
+
+img {
+  display: block;
+  max-width: 100%;
 }
 
 :focus-visible {
@@ -118,20 +117,20 @@ a {
 }
 
 ::selection {
-  background: rgba(59, 130, 246, 0.35);
+  background: var(--accent);
+  color: #fff;
 }
 
-/* Barres de défilement discrètes */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(148, 163, 184, 0.25) transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
 *::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 *::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.22);
+  background: rgba(255, 255, 255, 0.18);
   border-radius: 999px;
 }
 *::-webkit-scrollbar-track {
@@ -150,40 +149,114 @@ a {
   border: 0;
 }
 
-.gradient-text {
-  background: var(--gradient);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+/* ─── Éléments réutilisables ─────────────────────────── */
+
+/* Le « // » magenta */
+.slashes {
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: -0.08em;
+  margin-right: 0.5em;
 }
 
-/* Bouton icône réutilisable */
+/* Petit libellé monospace en majuscules */
+.eyebrow {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* Bouton pilule (comme la navigation DJ Void) */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 22px;
+  border-radius: var(--pill);
+  border: 1.5px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 0.92rem;
+  letter-spacing: 0.01em;
+  color: var(--text);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.25s var(--ease), color 0.25s var(--ease), border-color 0.25s var(--ease),
+    transform 0.2s var(--ease);
+}
+.pill:hover:not(:disabled) {
+  background: var(--text);
+  color: #000;
+}
+.pill:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.pill:disabled {
+  opacity: 0.4;
+}
+.pill--solid {
+  background: var(--text);
+  color: #000;
+  border-color: var(--text);
+}
+.pill--solid:hover:not(:disabled) {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.pill--sm {
+  padding: 7px 14px;
+  font-size: 0.82rem;
+}
+.pill--danger {
+  border-color: rgba(255, 77, 77, 0.6);
+  color: #ff8a8a;
+}
+.pill--danger:hover:not(:disabled) {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}
+
+/* Bouton icône */
 .icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   color: var(--text-dim);
   transition: background 0.2s var(--ease), color 0.2s var(--ease), transform 0.15s var(--ease);
 }
 .icon-btn:hover:not(:disabled) {
-  background: rgba(148, 163, 184, 0.1);
+  background: rgba(255, 255, 255, 0.1);
   color: var(--text);
 }
 .icon-btn:active:not(:disabled) {
-  transform: scale(0.94);
+  transform: scale(0.92);
 }
 .icon-btn:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
+}
+.icon-btn--sm {
+  width: 28px;
+  height: 28px;
+}
+.icon-btn--danger:hover:not(:disabled) {
+  color: var(--danger);
+  background: var(--danger-soft);
 }
 
-/* Animations partagées */
+/* ─── Animations ─────────────────────────────────────── */
 @keyframes fade-up {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(14px);
   }
   to {
     opacity: 1;
@@ -200,35 +273,16 @@ a {
   }
 }
 
-@keyframes spin {
+@keyframes marquee {
   to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes pulse-glow {
-  0%,
-  100% {
-    opacity: 0.55;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.06);
-  }
-}
-
-@keyframes gradient-shift {
-  0%,
-  100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
+    transform: translateX(-50%);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
   *,
   *::before,
   *::after {

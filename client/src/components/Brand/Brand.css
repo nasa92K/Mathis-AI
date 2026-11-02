@@ -1,92 +1,60 @@
-/* Avatar */
+/* Avatar photo */
 .mathis-avatar {
   position: relative;
   display: inline-flex;
   flex-shrink: 0;
-  border-radius: 12px;
+  border-radius: 50%;
 }
-.mathis-avatar svg {
-  display: block;
+.mathis-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid var(--border-strong);
+  background: var(--surface-2);
 }
-.mathis-avatar.is-thinking::after {
+.mathis-avatar.is-thinking::before {
   content: '';
   position: absolute;
-  inset: -3px;
-  border-radius: 14px;
-  background: var(--gradient);
-  filter: blur(8px);
-  opacity: 0.6;
-  z-index: -1;
-  animation: pulse-glow 1.6s ease-in-out infinite;
-}
-
-/* Logo compact */
-.logo-compact {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.logo-compact__text {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 1.05rem;
-  letter-spacing: 0.08em;
-}
-
-/* Logo d'accueil animé */
-.logo-hero {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 18px;
-}
-.logo-hero__emblem {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 120px;
-  height: 120px;
-}
-.logo-hero__emblem .mathis-avatar {
-  filter: drop-shadow(0 0 18px rgba(99, 102, 241, 0.45));
-  animation: float 5s ease-in-out infinite;
-}
-.logo-hero__ring {
-  position: absolute;
-  inset: 0;
+  inset: -4px;
   border-radius: 50%;
-  border: 1.5px solid transparent;
-  border-top-color: rgba(59, 130, 246, 0.8);
-  border-right-color: rgba(139, 92, 246, 0.4);
-  animation: spin 6s linear infinite;
+  border: 2px solid transparent;
+  border-top-color: var(--accent);
+  border-right-color: var(--accent);
+  animation: avatar-spin 0.9s linear infinite;
 }
-.logo-hero__ring--2 {
-  inset: 12px;
-  border-top-color: transparent;
-  border-bottom-color: rgba(139, 92, 246, 0.7);
-  border-left-color: rgba(59, 130, 246, 0.35);
-  animation-duration: 9s;
-  animation-direction: reverse;
-}
-.logo-hero__title {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: clamp(2.2rem, 6vw, 3.4rem);
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  line-height: 1;
-}
-.logo-hero__ai {
-  background-size: 200% 200%;
-  animation: gradient-shift 6s ease infinite;
+@keyframes avatar-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
+/* Logo texte */
+.logo {
+  display: inline-flex;
+  align-items: baseline;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--text);
+  transform: skewX(-6deg);
+}
+.logo--md {
+  font-size: 1.6rem;
+}
+.logo--sm {
+  font-size: 1.2rem;
+}
+.logo__slash {
+  margin: 0 0.12em 0 0.08em;
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: -0.12em;
+  color: var(--accent);
+}
+.logo__ai {
+  font-weight: 300;
 }

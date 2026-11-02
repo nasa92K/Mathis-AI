@@ -68,12 +68,17 @@ export function useChat({ store, settings }) {
     [patchMessage, updateConversation, settings.responseStyle],
   );
 
+  /**
+   * Envoie un message. Avec { newConversation: true }, démarre une nouvelle
+   * conversation (utilisé par les suggestions de l'accueil et du garage).
+   */
   const sendMessage = useCallback(
-    (text) => {
+    (text, { newConversation = false } = {}) => {
       const content = text.trim();
       if (!content || generatingId) return false;
 
-      const conversation = activeConversation ?? createConversation();
+      const conversation =
+        newConversation || !activeConversation ? createConversation() : activeConversation;
       const userMessage = newMessage('user', content);
       const assistantMessage = newMessage('assistant', '', 'streaming');
       const isFirst = conversation.messages.length === 0;

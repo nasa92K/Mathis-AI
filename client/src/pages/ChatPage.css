@@ -1,0 +1,89 @@
+/* La page de chat occupe exactement l'écran sous la barre de navigation. */
+.chat-page {
+  display: flex;
+  height: calc(100dvh - var(--nav-height));
+  overflow: hidden;
+}
+
+.chat-main {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(900px 420px at 50% 115%, rgba(214, 60, 245, 0.07), transparent 70%),
+    var(--bg);
+}
+
+.chat-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  height: 56px;
+  padding: 0 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.chat-toolbar__history {
+  display: none;
+}
+
+.chat-toolbar__title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 0.86rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.chat-main__welcome {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+}
+
+/* Bandeau quand l'IA n'est pas disponible */
+.service-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: calc(100% - 44px);
+  max-width: calc(var(--content-width) - 44px);
+  margin: 0 auto 4px;
+  padding: 10px 16px;
+  border-radius: var(--pill);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: #fde68a;
+  border: 1px solid rgba(250, 204, 21, 0.4);
+  background: rgba(250, 204, 21, 0.07);
+  animation: fade-up 0.3s var(--ease);
+}
+.service-banner svg {
+  flex-shrink: 0;
+}
+
+@media (max-width: 960px) {
+  .chat-toolbar {
+    padding: 0 10px;
+  }
+  .chat-toolbar__history {
+    display: inline-flex;
+    color: var(--text);
+  }
+}
+
+@media (max-width: 640px) {
+  .service-banner {
+    width: calc(100% - 24px);
+    border-radius: var(--radius);
+  }
+}

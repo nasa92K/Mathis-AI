@@ -61,13 +61,14 @@ export default function SettingsPage({
     <div className="settings">
       <div className="settings__inner">
         <header className="settings__header">
-          <button type="button" className="icon-btn" onClick={onBack} aria-label="Retour à la discussion">
-            <ArrowLeft size={19} />
+          <button type="button" className="pill pill--sm settings__back" onClick={onBack}>
+            <ArrowLeft size={15} /> Retour au chat
           </button>
-          <div>
-            <h1 className="settings__title">Paramètres</h1>
-            <p className="settings__subtitle">Personnalise ton expérience avec Mathis AI.</p>
-          </div>
+          <p className="eyebrow">
+            <span className="slashes">//</span>Réglages
+          </p>
+          <h1 className="settings__title">Paramètres</h1>
+          <p className="settings__subtitle">Personnalise ton expérience avec Mathis AI.</p>
         </header>
 
         <Section icon={MessageCircle} title="Réponses de Mathis">
@@ -144,7 +145,7 @@ export default function SettingsPage({
             </div>
             <button
               type="button"
-              className="settings__btn settings__btn--danger"
+              className="pill pill--sm pill--danger"
               disabled={conversationCount === 0}
               onClick={() => setConfirmClear(true)}
             >
@@ -156,7 +157,7 @@ export default function SettingsPage({
               <span className="setting-row__label">Préférences</span>
               <p className="setting-row__description">Remet tous les réglages par défaut.</p>
             </div>
-            <button type="button" className="settings__btn" onClick={onResetSettings}>
+            <button type="button" className="pill pill--sm" onClick={onResetSettings}>
               <RotateCcw size={15} /> Réinitialiser
             </button>
           </div>

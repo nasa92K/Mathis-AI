@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { Check, MessageSquare, Pencil, Plus, Settings, Trash2, X } from 'lucide-react';
-import Logo from '../Brand/Logo.jsx';
+import { Check, Pencil, Plus, Trash2, X } from 'lucide-react';
 import ConfirmDialog from '../ConfirmDialog/ConfirmDialog.jsx';
 import { formatRelativeDate } from '../../utils/helpers.js';
 import './Sidebar.css';
 
-function ConversationItem({ conversation, active, generating, onSelect, onRename, onDelete }) {
+function ConversationItem({ conversation, index, active, generating, onSelect, onRename, onDelete }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(conversation.title);
   const inputRef = useRef(null);
@@ -16,11 +15,6 @@ function ConversationItem({ conversation, active, generating, onSelect, onRename
       inputRef.current?.select();
     }
   }, [editing]);
-
-  const startEditing = () => {
-    setDraft(conversation.title);
-    setEditing(true);
-  };
 
   const save = () => {
     if (draft.trim()) onRename(conversation.id, draft);
@@ -45,7 +39,10 @@ function ConversationItem({ conversation, active, generating, onSelect, onRename
             aria-label="Nouveau titre de la conversation"
             onChange={(event) => setDraft(event.target.value)}
             onKeyDown={(event) => {
-              if (event.key === 'Escape') setEditing(false);
+              if (event.key === 'Escape') {
+                event.stopPropagation();
+                setEditing(false);
+              }
             }}
           />
           <button type="submit" className="icon-btn icon-btn--sm" aria-label="Enregistrer le titre">
@@ -70,14 +67,20 @@ function ConversationItem({ conversation, active, generating, onSelect, onRename
         type="button"
         className="conv-item__main"
         onClick={() => onSelect(conversation.id)}
-        aria-current={active ? 'page' : undefined}
+        aria-current={active ? 'true' : undefined}
         title={conversation.title}
       >
-        <MessageSquare size={15} className="conv-item__icon" aria-hidden="true" />
+        <span className="conv-item__num" aria-hidden="true">
+          {String(index + 1).padStart(2, '0')}
+        </span>
         <span className="conv-item__text">
           <span className="conv-item__title">{conversation.title}</span>
           <span className="conv-item__date">
-            {generating ? 'Mathis écrit…' : formatRelativeDate(conversation.updatedAt)}
+            {generating ? (
+              <span className="conv-item__live">● Mathis écrit…</span>
+            ) : (
+              formatRelativeDate(conversation.updatedAt)
+            )}
           </span>
         </span>
       </button>
@@ -86,7 +89,10 @@ function ConversationItem({ conversation, active, generating, onSelect, onRename
           type="button"
           className="icon-btn icon-btn--sm"
           aria-label={`Renommer « ${conversation.title} »`}
-          onClick={startEditing}
+          onClick={() => {
+            setDraft(conversation.title);
+            setEditing(true);
+          }}
         >
           <Pencil size={14} />
         </button>
@@ -103,17 +109,16 @@ function ConversationItem({ conversation, active, generating, onSelect, onRename
   );
 }
 
+/** Historique des conversations (colonne à gauche du chat, tiroir sur mobile). */
 export default function Sidebar({
   open,
   conversations,
   activeId,
   generatingId,
-  view,
   onNewConversation,
   onSelect,
   onRename,
   onDelete,
-  onOpenSettings,
   onClose,
 }) {
   const [pendingDelete, setPendingDelete] = useState(null);
@@ -122,30 +127,32 @@ export default function Sidebar({
     <>
       <div className={`sidebar-overlay ${open ? 'is-visible' : ''}`} onClick={onClose} aria-hidden="true" />
 
-      <aside className={`sidebar ${open ? 'is-open' : ''}`} aria-label="Barre latérale">
+      <aside className={`sidebar ${open ? 'is-open' : ''}`} aria-label="Historique des conversations">
         <div className="sidebar__header">
-          <Logo />
-          <button type="button" className="icon-btn sidebar__close" aria-label="Fermer le menu" onClick={onClose}>
+          <p className="eyebrow">
+            <span className="slashes">//</span>Historique
+          </p>
+          <button type="button" className="icon-btn sidebar__close" aria-label="Fermer l'historique" onClick={onClose}>
             <X size={18} />
           </button>
         </div>
 
-        <button type="button" className="sidebar__new" onClick={onNewConversation}>
-          <Plus size={18} />
+        <button type="button" className="pill sidebar__new" onClick={onNewConversation}>
+          <Plus size={17} />
           Nouvelle conversation
         </button>
 
-        <nav className="sidebar__history" aria-label="Historique des conversations">
-          <p className="sidebar__label">Historique</p>
+        <nav className="sidebar__history" aria-label="Conversations enregistrées">
           {conversations.length === 0 ? (
-            <p className="sidebar__empty">Aucune conversation pour l'instant. Lance-toi 👋</p>
+            <p className="sidebar__empty">Aucune conversation pour l'instant. Le moteur est chaud, lance-toi.</p>
           ) : (
             <ul className="sidebar__list">
-              {conversations.map((conversation) => (
+              {conversations.map((conversation, index) => (
                 <ConversationItem
                   key={conversation.id}
+                  index={index}
                   conversation={conversation}
-                  active={view === 'chat' && conversation.id === activeId}
+                  active={conversation.id === activeId}
                   generating={conversation.id === generatingId}
                   onSelect={onSelect}
                   onRename={onRename}
@@ -156,18 +163,7 @@ export default function Sidebar({
           )}
         </nav>
 
-        <div className="sidebar__footer">
-          <button
-            type="button"
-            className={`sidebar__settings ${view === 'settings' ? 'is-active' : ''}`}
-            onClick={onOpenSettings}
-            aria-current={view === 'settings' ? 'page' : undefined}
-          >
-            <Settings size={17} />
-            Paramètres
-          </button>
-          <p className="sidebar__slogan">Built different. Powered by AI.</p>
-        </div>
+        <p className="sidebar__footnote">Sauvegardé uniquement dans ce navigateur.</p>
       </aside>
 
       <ConfirmDialog

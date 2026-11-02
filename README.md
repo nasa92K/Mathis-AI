@@ -41,11 +41,15 @@ projet Mathis AI/
     ├── public/favicon.svg
     └── src/
         ├── main.jsx
-        ├── App.jsx               # Mise en page + raccourcis clavier
+        ├── App.jsx               # Routage entre les pages + raccourcis clavier
         ├── App.css
-        ├── styles/global.css     # Thème : couleurs, verre dépoli, animations
+        ├── styles/global.css     # Thème : couleurs, typo, boutons « pilule », animations
+        ├── assets/
+        │   ├── mathis-avatar.jpg     # ⭐ Photo de Mathis (avatar rond, 320 px)
+        │   └── mathis-portrait.jpg   # ⭐ Photo grand format (accueil + À propos)
         ├── api/chatApi.js        # fetch + lecture du flux SSE
         ├── hooks/
+        │   ├── useHashRoute.js       # Navigation entre les pages (#/garage, #/chat…)
         │   ├── useConversations.js   # Conversations + sauvegarde localStorage
         │   ├── useChat.js            # Envoi, arrêt, régénération
         │   ├── useSettings.js        # Paramètres utilisateur
@@ -54,16 +58,44 @@ projet Mathis AI/
         ├── utils/
         │   ├── helpers.js
         │   └── storage.js
+        ├── pages/
+        │   ├── HomePage.jsx          # Accueil : grand titre, bandeau moteurs, fiche technique
+        │   ├── GaragePage.jsx        # Le Garage : domaines d'expertise + diagnostic
+        │   ├── ChatPage.jsx          # Le chatbot (historique + discussion)
+        │   ├── AboutPage.jsx         # À propos de Mathis
+        │   └── shared.css            # Styles communs aux pages
         └── components/
-            ├── Brand/            # Logo animé + avatar de Mathis
+            ├── Layout/           # Barre de navigation en pilules + pied de page
+            ├── Brand/            # Logo « MATHIS // AI » + avatar photo
+            ├── Decor/            # Compte-tours animé (SVG)
             ├── Sidebar/          # Historique, nouvelle conversation, renommer, supprimer
-            ├── Welcome/          # Page d'accueil + suggestions cliquables
-            ├── Chat/             # Messages, Markdown, blocs de code, indicateur de réflexion
+            ├── Welcome/          # Écran d'accueil du chat + suggestions cliquables
+            ├── Chat/             # Messages, Markdown, blocs de code, voyants de réflexion
             ├── Composer/         # Zone de saisie
             ├── Settings/         # Page de paramètres
             ├── Status/           # Pastille « En ligne / Hors ligne »
             └── ConfirmDialog/    # Fenêtre de confirmation
 ```
+
+---
+
+## Pages et design
+
+Le site reprend l'esprit d'un site de DJ minimaliste : noir, gris et blanc, un seul accent magenta pour les `//`, de très grands titres serrés (Inter Tight), le texte d'interface en monospace (Space Mono) et des boutons en « pilule ». Le thème est automobile.
+
+| Page | Adresse | Contenu |
+|---|---|---|
+| Accueil | `#/accueil` | Photo de Mathis en noir et blanc, grand titre, bandeau défilant de moteurs, fiche technique avec compte-tours animé, sujets à lancer d'un clic |
+| Le Garage | `#/garage` | Les quatre domaines de Mathis (supercars, mécanique, aviation, le reste) avec un bouton « Demander à Mathis », et un encart « Diagnostic express » |
+| Chat | `#/chat` | Le chatbot : historique à gauche, discussion à droite |
+| À propos | `#/a-propos` | Portrait, personnalité, transparence (c'est une IA), modèle utilisé |
+| Paramètres | `#/parametres` | Réglages (icône d'engrenage dans la barre du haut) |
+
+Les adresses utilisent `#/…` : la navigation marche partout (en local, sur HubSpot) sans configuration côté serveur.
+
+**Changer la photo de Mathis :** remplace `client/src/assets/mathis-avatar.jpg` (carré, recadré sur le visage) et `client/src/assets/mathis-portrait.jpg` (carré, grand format), en gardant les mêmes noms. Relance ensuite `npm run build:hubspot` pour la version en ligne.
+
+**Changer les couleurs :** tout est dans les variables en haut de `client/src/styles/global.css`. Par exemple, `--accent` est le magenta.
 
 ---
 
@@ -193,7 +225,7 @@ Les autres réglages sont dans `server/.env` :
 - Blocs de code avec coloration syntaxique et bouton « Copier »
 - Bouton pour copier une réponse, et bouton pour régénérer la dernière réponse
 - Bouton **Arrêter** (ou touche `Échap`) pour couper la génération en cours
-- Animation « Mathis AI réfléchit… », puis défilement automatique (il ne force pas le défilement si tu es remonté lire plus haut)
+- Animation de réflexion façon voyants de passage de rapport (« Mathis fait monter les tours… »), puis défilement automatique (il ne force pas le défilement si tu es remonté lire plus haut)
 
 **Conversations**
 - Historique dans la barre latérale, conservé après actualisation (`localStorage`)
@@ -201,11 +233,12 @@ Les autres réglages sont dans `server/.env` :
 - Le titre est généré automatiquement à partir du premier message
 
 **Interface**
-- Page d'accueil avec logo animé et quatre suggestions qui envoient directement le message
+- Site sur plusieurs pages (Accueil, Le Garage, Chat, À propos) avec une barre de navigation en pilules
+- Les suggestions de l'accueil et du garage ouvrent une nouvelle conversation et envoient directement le message
 - Pastille de disponibilité de l'IA (en ligne, clé manquante, serveur hors ligne…)
 - Page **Paramètres** : longueur des réponses, animation, envoi avec Entrée, état de l'IA, suppression de l'historique
-- Responsive : sur mobile et tablette, la barre latérale devient un tiroir
-- Utilisable au clavier : focus visible, fenêtres de confirmation accessibles, raccourcis
+- Responsive : sur mobile, la navigation devient un menu plein écran et l'historique un tiroir
+- Utilisable au clavier : lien « Aller au contenu », focus visible, fenêtres de confirmation accessibles, raccourcis
 
 **Raccourcis clavier**
 

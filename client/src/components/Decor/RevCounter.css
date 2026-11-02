@@ -1,0 +1,105 @@
+.rev-counter svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.rev-counter__bezel {
+  fill: rgba(0, 0, 0, 0.55);
+  stroke: rgba(255, 255, 255, 0.18);
+  stroke-width: 1.5;
+}
+
+.rev-counter__track,
+.rev-counter__redline {
+  fill: none;
+  stroke-width: 3;
+}
+.rev-counter__track {
+  stroke: rgba(255, 255, 255, 0.25);
+}
+.rev-counter__redline {
+  stroke: var(--accent);
+  stroke-width: 5;
+}
+
+.rev-counter__tick {
+  stroke: rgba(255, 255, 255, 0.5);
+  stroke-width: 1.2;
+}
+.rev-counter__tick.is-major {
+  stroke: #fff;
+  stroke-width: 2.2;
+}
+.rev-counter__tick.is-red {
+  stroke: var(--accent);
+}
+
+.rev-counter__num {
+  fill: #fff;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+.rev-counter__num.is-red {
+  fill: var(--accent);
+}
+
+.rev-counter__label {
+  fill: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  text-anchor: middle;
+  text-transform: uppercase;
+}
+
+/* L'aiguille démarre à 0 (-225° + 90° car elle est dessinée vers le haut) */
+.rev-counter__needle {
+  transform-origin: 100px 100px;
+  transform: rotate(-135deg);
+  animation: rev 6s var(--ease) infinite;
+}
+.rev-counter__needle line {
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 4px var(--accent-glow));
+}
+
+.rev-counter__hub {
+  fill: #111;
+  stroke: #fff;
+  stroke-width: 2;
+}
+
+/* Démarrage, montée en régime, coup de gaz dans la zone rouge, ralenti */
+@keyframes rev {
+  0% {
+    transform: rotate(-135deg);
+  }
+  12% {
+    transform: rotate(-95deg);
+  }
+  30% {
+    transform: rotate(-105deg);
+  }
+  48% {
+    transform: rotate(108deg);
+  }
+  54% {
+    transform: rotate(96deg);
+  }
+  60% {
+    transform: rotate(110deg);
+  }
+  78% {
+    transform: rotate(-100deg);
+  }
+  100% {
+    transform: rotate(-105deg);
+  }
+}

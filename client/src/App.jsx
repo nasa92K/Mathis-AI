@@ -1,183 +1,146 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { AlertTriangle, Menu, SquarePen } from 'lucide-react';
-import Sidebar from './components/Sidebar/Sidebar.jsx';
-import WelcomeScreen from './components/Welcome/WelcomeScreen.jsx';
-import MessageList from './components/Chat/MessageList.jsx';
-import Composer from './components/Composer/Composer.jsx';
+import { useCallback, useEffect, useRef } from 'react';
+import Navbar from './components/Layout/Navbar.jsx';
+import Footer from './components/Layout/Footer.jsx';
+import HomePage from './pages/HomePage.jsx';
+import GaragePage from './pages/GaragePage.jsx';
+import ChatPage from './pages/ChatPage.jsx';
+import AboutPage from './pages/AboutPage.jsx';
 import SettingsPage from './components/Settings/SettingsPage.jsx';
-import StatusIndicator from './components/Status/StatusIndicator.jsx';
 import { useConversations } from './hooks/useConversations.js';
 import { useSettings } from './hooks/useSettings.js';
 import { useHealth } from './hooks/useHealth.js';
 import { useChat } from './hooks/useChat.js';
+import { useHashRoute } from './hooks/useHashRoute.js';
 import './App.css';
 
-const UNAVAILABLE_STATUSES = new Set(['not_configured', 'server_down', 'offline']);
+const PAGE_TITLES = {
+  accueil: null,
+  garage: 'Le Garage',
+  chat: 'Chat',
+  'a-propos': 'À propos',
+  parametres: 'Paramètres',
+};
 
 export default function App() {
+  const [route, navigate] = useHashRoute();
   const store = useConversations();
   const { settings, updateSetting, resetSettings } = useSettings();
   const { health, refreshHealth } = useHealth();
   const chat = useChat({ store, settings });
-
-  const [view, setView] = useState('chat'); // 'chat' | 'settings'
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const composerRef = useRef(null);
-
-  const { activeConversation } = store;
-  const hasMessages = Boolean(activeConversation?.messages.length);
+  const mainRef = useRef(null);
 
   const focusComposer = () => requestAnimationFrame(() => composerRef.current?.focus());
 
-  const handleNewConversation = useCallback(() => {
+  const startNewConversation = useCallback(() => {
     store.setActiveId(null); // la conversation est créée au premier message
-    setView('chat');
-    setSidebarOpen(false);
+    navigate('chat');
     focusComposer();
-  }, [store]);
+  }, [store, navigate]);
 
-  const handleSelect = (id) => {
-    store.setActiveId(id);
-    setView('chat');
-    setSidebarOpen(false);
-    focusComposer();
-  };
-
-  const handleDelete = (id) => {
-    if (chat.generatingId === id) chat.stop();
-    store.deleteConversation(id);
-  };
-
-  const handleClearHistory = () => {
-    chat.stop();
-    store.clearAllConversations();
-  };
+  /** Suggestion cliquée depuis l'accueil ou le garage : nouvelle conversation dans le chat. */
+  const askFromPage = useCallback(
+    (prompt) => {
+      if (chat.sendMessage(prompt, { newConversation: true })) navigate('chat');
+    },
+    [chat, navigate],
+  );
 
   // Raccourcis clavier globaux
+  const { isGenerating, stop } = chat;
   useEffect(() => {
     const onKeyDown = (event) => {
-      if (event.key === 'Escape' && chat.isGenerating) {
+      if (event.key === 'Escape' && isGenerating) {
         event.preventDefault();
-        chat.stop();
+        stop();
         return;
       }
       if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'o') {
         event.preventDefault();
-        handleNewConversation();
+        startNewConversation();
         return;
       }
       const target = event.target;
-      const typing = target instanceof HTMLElement && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));
-      if (event.key === '/' && !typing && view === 'chat') {
+      const typing =
+        target instanceof HTMLElement &&
+        (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));
+      if (event.key === '/' && !typing && route === 'chat') {
         event.preventDefault();
         composerRef.current?.focus();
       }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [chat, handleNewConversation, view]);
+  }, [isGenerating, stop, startNewConversation, route]);
 
-  // Titre de l'onglet
+  // Titre de l'onglet + focus sur le contenu à chaque changement de page (lecteurs d'écran)
+  const conversationTitle = store.activeConversation?.messages.length ? store.activeConversation.title : null;
   useEffect(() => {
-    const title = view === 'settings' ? 'Paramètres' : hasMessages ? activeConversation.title : null;
-    document.title = title ? `${title} · MATHIS AI` : 'MATHIS AI';
-  }, [view, activeConversation?.title, hasMessages]);
+    const title = route === 'chat' ? conversationTitle ?? 'Chat' : PAGE_TITLES[route];
+    document.title = title ? `${title} · MATHIS AI` : 'MATHIS AI — Built different. Powered by AI.';
+  }, [route, conversationTitle]);
 
-  const headerTitle =
-    view === 'settings' ? 'Paramètres' : hasMessages ? activeConversation.title : 'Nouvelle conversation';
+  useEffect(() => {
+    if (route === 'chat') focusComposer();
+    else mainRef.current?.focus({ preventScroll: true });
+  }, [route]);
+
+  let page;
+  switch (route) {
+    case 'garage':
+      page = <GaragePage onAsk={askFromPage} isGenerating={chat.isGenerating} />;
+      break;
+    case 'chat':
+      page = (
+        <ChatPage
+          store={store}
+          chat={chat}
+          settings={settings}
+          health={health}
+          composerRef={composerRef}
+          onNewConversation={startNewConversation}
+        />
+      );
+      break;
+    case 'a-propos':
+      page = <AboutPage health={health} />;
+      break;
+    case 'parametres':
+      page = (
+        <SettingsPage
+          settings={settings}
+          onUpdateSetting={updateSetting}
+          onResetSettings={resetSettings}
+          health={health}
+          onRefreshHealth={refreshHealth}
+          conversationCount={store.conversations.length}
+          onClearHistory={() => {
+            chat.stop();
+            store.clearAllConversations();
+          }}
+          onBack={() => navigate('chat')}
+        />
+      );
+      break;
+    default:
+      page = <HomePage onAsk={askFromPage} isGenerating={chat.isGenerating} />;
+  }
+
+  const isChat = route === 'chat';
 
   return (
-    <div className="app">
-      <Sidebar
-        open={sidebarOpen}
-        conversations={store.conversations}
-        activeId={store.activeId}
-        generatingId={chat.generatingId}
-        view={view}
-        onNewConversation={handleNewConversation}
-        onSelect={handleSelect}
-        onRename={store.renameConversation}
-        onDelete={handleDelete}
-        onOpenSettings={() => {
-          setView('settings');
-          setSidebarOpen(false);
-        }}
-        onClose={() => setSidebarOpen(false)}
-      />
-
-      <main className="main">
-        <header className="topbar">
-          <button
-            type="button"
-            className="icon-btn topbar__menu"
-            onClick={() => setSidebarOpen(true)}
-            aria-label="Ouvrir le menu"
-          >
-            <Menu size={20} />
-          </button>
-          <h2 className="topbar__title" title={headerTitle}>
-            {headerTitle}
-          </h2>
-          <div className="topbar__actions">
-            <StatusIndicator health={health} onRefresh={refreshHealth} compact />
-            <button
-              type="button"
-              className="icon-btn topbar__new"
-              onClick={handleNewConversation}
-              aria-label="Nouvelle conversation"
-              title="Nouvelle conversation"
-            >
-              <SquarePen size={18} />
-            </button>
-          </div>
-        </header>
-
-        {view === 'settings' ? (
-          <SettingsPage
-            settings={settings}
-            onUpdateSetting={updateSetting}
-            onResetSettings={resetSettings}
-            health={health}
-            onRefreshHealth={refreshHealth}
-            conversationCount={store.conversations.length}
-            onClearHistory={handleClearHistory}
-            onBack={() => {
-              setView('chat');
-              focusComposer();
-            }}
-          />
-        ) : (
-          <>
-            {hasMessages ? (
-              <MessageList
-                conversation={activeConversation}
-                isGenerating={chat.isGenerating}
-                onRegenerate={chat.regenerate}
-                smoothTyping={settings.smoothTyping}
-              />
-            ) : (
-              <div className="main__welcome">
-                <WelcomeScreen onSuggestion={chat.sendMessage} disabled={chat.isGenerating} />
-              </div>
-            )}
-
-            {UNAVAILABLE_STATUSES.has(health.status) && (
-              <div className="service-banner" role="status">
-                <AlertTriangle size={16} aria-hidden="true" />
-                <span>{health.message}</span>
-              </div>
-            )}
-
-            <Composer
-              ref={composerRef}
-              onSend={chat.sendMessage}
-              onStop={chat.stop}
-              isGenerating={chat.isGenerating}
-              enterToSend={settings.enterToSend}
-            />
-          </>
-        )}
+    <div className={`site ${isChat ? 'site--chat' : ''}`}>
+      <a href="#contenu" className="skip-link" onClick={(event) => {
+        event.preventDefault();
+        mainRef.current?.focus();
+      }}>
+        Aller au contenu
+      </a>
+      <Navbar route={route} health={health} onRefreshHealth={refreshHealth} />
+      <main id="contenu" ref={mainRef} tabIndex={-1} className="site__main">
+        {page}
       </main>
+      {!isChat && <Footer />}
     </div>
   );
 }

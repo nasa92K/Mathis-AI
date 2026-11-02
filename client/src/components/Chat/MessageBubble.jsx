@@ -46,9 +46,11 @@ function AssistantMessage({ message, isLast, canRegenerate, onRegenerate, smooth
 
   return (
     <article className="message message--assistant" aria-label="Réponse de Mathis AI" aria-busy={streaming}>
-      <MathisAvatar size={34} thinking={streaming && !message.content} />
+      <MathisAvatar size={38} thinking={streaming && !message.content} />
       <div className="message__body">
-        <div className="message__name">Mathis AI</div>
+        <div className="message__name">
+          <span className="slashes">//</span>Mathis AI
+        </div>
 
         {streaming && !shownText ? (
           <TypingIndicator />
@@ -73,7 +75,7 @@ function AssistantMessage({ message, isLast, canRegenerate, onRegenerate, smooth
               <p className="error-card__title">Mathis AI n'a pas pu répondre</p>
               <p className="error-card__message">{message.error?.message ?? 'Une erreur inconnue est survenue.'}</p>
               {isLast && canRegenerate && (
-                <button type="button" className="error-card__retry" onClick={onRegenerate}>
+                <button type="button" className="pill pill--sm error-card__retry" onClick={onRegenerate}>
                   <RotateCcw size={14} /> Réessayer
                 </button>
               )}
